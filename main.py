@@ -4,8 +4,7 @@ import sys, errno
 import os
 import cv2
 from ascii_magic import AsciiArt
-import msvcrt # for windows compatibility
-
+import msvcrt
 
 class ConvertAscii:
     def convert_image_to_ascii(self, image_path, output_path, width=80):
@@ -55,31 +54,32 @@ class Display:
                     time.sleep(0.1)  # Short sleep to prevent high CPU usage
         except Exception as e:
             raise e
-
+class ExtractFrame:
 class ExtractFrame:
 
+    @staticmethod
     def extract_frames(input_video, output_directory):
-        try:
-            os.makedirs(output_directory, exist_ok=True)
-            video = cv2.VideoCapture(input_video)
-            frame_count = 1
+        os.makedirs(output_directory, exist_ok=True)
 
-            while True:
-                success, frame = video.read()
-                if not success:
-                    break
+        video = cv2.VideoCapture(input_video)
 
-                output_file = os.path.join(output_directory, f"frame_{frame_count:04d}.png")
-                cv2.imwrite(output_file, frame)
+        count = 0
 
-                video.set(cv2.CAP_PROP_POS_MSEC, (frame_count) * 1000)
-                frame_count += 1
+        while True:
+            ret, frame = video.read()
 
-            video.release()
-            print(f"Extracted {frame_count - 1} frames to {output_directory}")
-        except Exception as e:
-            raise e
+            if not ret:
+                break
 
+            cv2.imwrite(
+                os.path.join(output_directory, f"{count:06d}.png"),
+                frame
+            )
+
+            count += 1
+
+        video.release()
+        print(f"Extracted {count} frames")
 def kbhit():
     return msvcrt.kbhit()
 
@@ -96,7 +96,6 @@ def main():
     # Extract frames from video
     ExtractFrame.extract_frames(input_video, frames_dir)
 
-    # Convert frames to ASCII
     converter = ConvertAscii()
     converter.convert_frames_to_ascii(frames_dir, ascii_dir)
 
